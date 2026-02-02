@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import google.generativeai as genai
 import time
 
 # --- CONFIGURACIÓN DE PÁGINA ---
@@ -11,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed" 
 )
 
-# --- ESTILOS CSS CORRECTIVOS (FORZADO DE MODO CLARO TOTAL) ---
+# --- ESTILOS CSS CORRECTIVOS ---
 st.markdown("""
     <style>
     /* 1. RESETEO TOTAL DE COLORES (FUERZA BRUTA MODO CLARO) */
@@ -22,148 +21,109 @@ st.markdown("""
         --text-color: #111827;
         --font: "Source Sans Pro", sans-serif;
     }
+    .stApp { background-color: #f4f4f5 !important; color: #111827 !important; }
+    header[data-testid="stHeader"] { background-color: #f4f4f5 !important; }
+    section[data-testid="stSidebar"] { background-color: #ffffff !important; border-right: 1px solid #e5e7eb; }
     
-    /* Fondo General de la App */
-    .stApp {
-        background-color: #f4f4f5 !important;
-        color: #111827 !important;
-    }
-    
-    /* Header superior */
-    header[data-testid="stHeader"] {
-        background-color: #f4f4f5 !important;
-    }
-    
-    /* Sidebar */
-    section[data-testid="stSidebar"] {
-        background-color: #ffffff !important;
-        border-right: 1px solid #e5e7eb;
-    }
-    
-    /* REGLA MAESTRA DE TEXTO: Todo negro, sin excepción */
     h1, h2, h3, h4, h5, h6, p, div, span, label, li, 
     .stMarkdown, .stTextInput input, .stSelectbox, .stTextArea textarea {
         color: #111827 !important;
     }
 
-    /* 2. TARJETAS KPI (REDUCIDAS Y COMPACTAS) */
+    /* 2. HEADER TIPO BANNER */
+    .header-image-container {
+        width: 100%;
+        border-radius: 0px 0px 15px 15px; 
+        overflow: hidden;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .stImage { margin-bottom: 20px; }
+    .block-container { padding-top: 2rem !important; }
+
+    /* 3. TARJETAS KPI (GRID) */
     .kpi-container {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 10px;
-        margin-bottom: 20px;
+        gap: 15px;
+        margin-bottom: 25px;
     }
     .kpi-card {
         background-color: white;
         border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 10px 15px; /* Padding reducido */
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        border-radius: 10px;
+        padding: 12px 18px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
         display: flex;
         align-items: center;
-        transition: transform 0.2s;
+        transition: all 0.2s ease;
     }
     .kpi-card:hover {
-        border-color: #000;
-        transform: translateY(-2px);
+        border-color: #111827;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
     .kpi-icon {
         background-color: #f3f4f6;
-        border-radius: 6px;
-        width: 32px; /* Más pequeño */
-        height: 32px; /* Más pequeño */
+        border-radius: 8px;
+        width: 38px;
+        height: 38px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
-        margin-right: 12px;
+        font-size: 18px;
+        margin-right: 15px;
         color: #000 !important;
     }
-    .kpi-content {
-        display: flex;
-        flex-direction: column;
-    }
-    .kpi-label {
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        color: #6b7280 !important;
-        line-height: 1;
-        margin-bottom: 4px;
-    }
-    .kpi-value {
-        font-size: 16px; /* Texto más compacto */
-        font-weight: 800;
-        color: #111827 !important;
-        line-height: 1;
-    }
+    .kpi-content { display: flex; flex-direction: column; }
+    .kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #6b7280 !important; margin-bottom: 2px; }
+    .kpi-value { font-size: 18px; font-weight: 900; color: #111827 !important; }
 
-    /* 3. MENÚS DESPLEGABLES (EXPANDERS) - CORRECCIÓN DE FONDO NEGRO */
+    /* 4. EXPANDERS */
     div[data-testid="stExpander"] {
         background-color: #ffffff !important;
         border: 1px solid #e5e7eb !important;
         border-radius: 8px !important;
         color: #000000 !important;
+        margin-bottom: 10px;
     }
-    
-    /* Cabecera del expander */
-    .streamlit-expanderHeader {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    
-    /* Texto del título del expander */
-    .streamlit-expanderHeader p {
-        font-weight: 700 !important;
-        font-size: 15px !important;
-    }
-
-    /* Contenido interno del expander */
-    div[data-testid="stExpander"] div[role="group"] {
-        background-color: #ffffff !important;
-    }
-    
-    /* Icono de flecha */
-    .streamlit-expanderHeader svg {
-        color: #000000 !important;
-        fill: #000000 !important;
-    }
-
-    /* 4. ANIMACIÓN DE CASCADA (DINAMISMO) */
-    @keyframes slideIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .stExpander, .kpi-card, .element-container {
-        animation: slideIn 0.5s ease-out forwards;
-    }
+    .streamlit-expanderHeader p { font-weight: 700 !important; font-size: 15px !important; color: #111827 !important; }
+    .streamlit-expanderHeader svg { fill: #111827 !important; }
 
     /* 5. TABS */
-    .stTabs [data-baseweb="tab-list"] {
-        background-color: transparent;
-        gap: 5px;
-    }
+    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
     .stTabs [data-baseweb="tab"] {
-        background-color: #ffffff;
+        background-color: white;
         border-radius: 6px;
-        color: #4b5563 !important;
         border: 1px solid #e5e7eb;
-        padding: 6px 16px;
-        font-size: 13px;
+        padding: 8px 20px;
+        font-weight: 600;
+        font-size: 14px;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #000000 !important;
-        color: #ffffff !important;
-        border-color: #000000;
-    }
-    .stTabs [aria-selected="true"] p {
-        color: #ffffff !important;
+        background-color: #111827 !important;
+        color: white !important;
+        border-color: #111827;
     }
     
-    /* 6. FOOTER */
+    /* 6. TABLAS FINANCIERAS */
+    .financial-total {
+        font-size: 20px;
+        font-weight: 900;
+        text-align: right;
+        padding: 15px;
+        background-color: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        margin-top: 10px;
+    }
+    .financial-total span {
+        color: #059669; /* Verde Dinero */
+    }
+
+    /* 7. FOOTER */
     .custom-footer {
-        margin-top: 30px;
+        margin-top: 40px;
         padding-top: 20px;
         border-top: 1px solid #e5e7eb;
         text-align: center;
@@ -177,7 +137,7 @@ st.markdown("""
 PROJECT_DATA = {
     "name": "CLUB HAWAI",
     "area": 265,
-    "type": "Losa Nervada (e=20cm)", # Texto acortado para móvil
+    "type": "Losa Nervada (e=20cm)",
     "strength": "f'c 210",
     "duration": "17 Días"
 }
@@ -189,67 +149,70 @@ ACTIVITIES = [
     {"id": 4, "title": "Curado", "icon": "💧", "duration": "7 Días", "desc": "Hidratación continua."}
 ]
 
-# --- FUNCIONES DE IA (GEMINI) ---
-def get_gemini_response(api_key, prompt):
-    if not api_key:
-        return "⚠️ Requiere API Key."
-    try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.0-flash') 
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        return f"Error: {str(e)}"
+# --- DATOS FINANCIEROS (NUEVO) ---
+DATA_NERVADA = [
+    {"MATERIAL": "CEMENTO GRIS PORTLAND TIPO I", "UND": "SACOS", "CANTIDAD": 159, "PRECIO ($)": 13.5, "TOTAL ($)": 2146.50},
+    {"MATERIAL": "PIEDRA PICADA", "UND": "M3", "CANTIDAD": 19, "PRECIO ($)": 35, "TOTAL ($)": 665.00},
+    {"MATERIAL": "ARENA LAVADA", "UND": "M3", "CANTIDAD": 8, "PRECIO ($)": 25, "TOTAL ($)": 200.00},
+    {"MATERIAL": "BLOQUE ANIME 15X60X200", "UND": "UND", "CANTIDAD": 175, "PRECIO ($)": 15, "TOTAL ($)": 2625.00},
+    {"MATERIAL": "MALLA ELECTROSOLDADA 15X15CM", "UND": "ROLLO", "CANTIDAD": 4, "PRECIO ($)": 100, "TOTAL ($)": 400.00},
+    {"MATERIAL": "VARILLA 3/8 L=6M (NERVIOS)", "UND": "UND", "CANTIDAD": 116, "PRECIO ($)": 7, "TOTAL ($)": 812.00},
+    {"MATERIAL": "CERCHA ELECTROSOLDADA 15CM L=6M", "UND": "UND", "CANTIDAD": 58, "PRECIO ($)": 10, "TOTAL ($)": 580.00},
+]
+
+DATA_METALICA = [
+    {"MATERIAL": "CEMENTO GRIS PORTLAND TIPO I", "UND": "SACOS", "CANTIDAD": 13.5, "PRECIO ($)": 114, "TOTAL ($)": 1539.00},
+    {"MATERIAL": "PIEDRA PICADA", "UND": "M3", "CANTIDAD": 35, "PRECIO ($)": 16, "TOTAL ($)": 560.00},
+    {"MATERIAL": "ARENA LAVADA", "UND": "M3", "CANTIDAD": 25, "PRECIO ($)": 6, "TOTAL ($)": 150.00},
+    {"MATERIAL": "CORREAS 120X60 ESP. 3mm", "UND": "UND", "CANTIDAD": 66, "PRECIO ($)": 70, "TOTAL ($)": 4620.00},
+    {"MATERIAL": "MALLA ELECTROSOLDADA 15X15CM", "UND": "ROLLO", "CANTIDAD": 4, "PRECIO ($)": 100, "TOTAL ($)": 400.00},
+    {"MATERIAL": "METALDECK CAL 22", "UND": "UND", "CANTIDAD": 79, "PRECIO ($)": 70, "TOTAL ($)": 5530.00},
+]
 
 # --- INTERFAZ PRINCIPAL ---
 
-# 1. HEADER INTEGRADO
-col_logo, col_title = st.columns([1.5, 5.5])
-with col_logo:
-    # Intenta cargar la imagen, si falla usa un emoji grande
-    try:
-        st.image("HMRenderigStudio3D-[Recuperado].gif", width=110) 
-    except:
-        st.markdown("<div style='font-size:40px;'>🏗️</div>", unsafe_allow_html=True)
+# 1. HEADER TIPO BANNER
+header_url = "https://drive.google.com/uc?export=view&id=1rgnj8vDVR7w8gUcpGztnLhMJZ4KI6scO"
+try:
+    st.image(header_url, use_container_width=True)
+except:
+    st.error("Error cargando imagen header.")
 
-with col_title:
-    st.markdown(f"""
-        <div style="margin-left: 10px;">
-            <h2 style="margin:0; font-size: 22px; font-weight:900; letter-spacing:-0.5px;">HM RENDERING STUDIO 3D</h2>
-            <p style="margin:0; font-size:13px; color:#6b7280 !important; font-weight:600;">PROYECTO: {PROJECT_DATA['name']} | CONTROL DE OBRA</p>
-        </div>
-    """, unsafe_allow_html=True)
+st.markdown(f"""
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="margin:0; font-size: 24px; font-weight:900; letter-spacing:-0.5px;">CONTROL DE OBRA: {PROJECT_DATA['name']}</h2>
+        <p style="margin:0; font-size:14px; color:#6b7280 !important; font-weight:600;">EJECUCIÓN DE LOSA ENTREPISO NERVADA</p>
+    </div>
+""", unsafe_allow_html=True)
 
-st.write("") # Espacio
-
-# 2. KPIS COMPACTOS (Nuevo Diseño Grid)
+# 2. KPIS
 kpi_html = f"""
 <div class="kpi-container">
     <div class="kpi-card">
         <div class="kpi-icon">📐</div>
         <div class="kpi-content">
-            <span class="kpi-label">Área</span>
+            <span class="kpi-label">Área Total</span>
             <span class="kpi-value">{PROJECT_DATA['area']} m²</span>
         </div>
     </div>
     <div class="kpi-card">
         <div class="kpi-icon">⏱️</div>
         <div class="kpi-content">
-            <span class="kpi-label">Tiempo</span>
+            <span class="kpi-label">Duración Est.</span>
             <span class="kpi-value">{PROJECT_DATA['duration']}</span>
         </div>
     </div>
     <div class="kpi-card">
         <div class="kpi-icon">🧱</div>
         <div class="kpi-content">
-            <span class="kpi-label">Concreto</span>
+            <span class="kpi-label">Resistencia</span>
             <span class="kpi-value">{PROJECT_DATA['strength']}</span>
         </div>
     </div>
     <div class="kpi-card">
         <div class="kpi-icon">📏</div>
         <div class="kpi-content">
-            <span class="kpi-label">Espesor</span>
+            <span class="kpi-label">Espesor Losa</span>
             <span class="kpi-value">20 cm</span>
         </div>
     </div>
@@ -257,64 +220,107 @@ kpi_html = f"""
 """
 st.markdown(kpi_html, unsafe_allow_html=True)
 
-# 3. CONTENIDO PRINCIPAL
-tab1, tab2, tab3 = st.tabs(["CRONOGRAMA", "MATERIALES", "ASISTENTE IA"])
+# 3. CONTENIDO
+tab1, tab2, tab3 = st.tabs(["CRONOGRAMA", "MATERIALES", "ANÁLISIS FINANCIERO"])
 
 # --- TAB 1: CRONOGRAMA ---
 with tab1:
     col_cron, col_rec = st.columns([2, 1])
-    
     with col_cron:
         st.markdown("##### 📅 Ruta Crítica")
         for act in ACTIVITIES:
             with st.expander(f"{act['icon']} {act['title']} ({act['duration']})"):
                 st.markdown(f"**Detalle:** {act['desc']}")
                 st.progress(0)
-    
     with col_rec:
-        st.markdown("##### ⚠️ Notas")
+        st.markdown("##### ⚠️ Notas Técnicas")
         st.info("""
-        - **Vibrado:** Obligatorio.
-        - **Grifado:** En vigas.
-        - **Curado:** 7 días.
+        - **Vibrado:** Obligatorio durante vaciado.
+        - **Grifado:** Acero en vigas.
+        - **Curado:** Mínimo 7 días.
         """)
 
 # --- TAB 2: MATERIALES ---
 with tab2:
     st.markdown("##### 📦 Inventario")
-    
-    # Selector compacto
-    opt = st.radio("Refuerzo:", ["A: Varilla 3/8\"", "B: Cercha"], horizontal=True)
+    opt = st.radio("Opciones de Refuerzo:", ["A: Varilla 3/8\"", "B: Cercha"], horizontal=True)
     
     data = [
-        {"M": "Cemento", "Cant": "159 Sacos"},
-        {"M": "Piedra", "Cant": "19 m³"},
-        {"M": "Arena", "Cant": "8 m³"},
-        {"M": "Anime", "Cant": "175 Pzas"},
-        {"M": "Malla", "Cant": "4 Rollos"},
+        {"M": "Cemento Gris", "Cant": "159 Sacos"},
+        {"M": "Piedra Picada", "Cant": "19 m³"},
+        {"M": "Arena Lavada", "Cant": "8 m³"},
+        {"M": "Bloque Anime", "Cant": "175 Pzas"},
+        {"M": "Malla Electrosoldada", "Cant": "4 Rollos"},
     ]
-    
     if "Varilla" in opt:
-        data.append({"M": "Varilla 3/8\"", "Cant": "116 Pzas"})
+        data.append({"M": "Varilla 3/8\" (L=6m)", "Cant": "116 Pzas"})
     else:
-        data.append({"M": "Cercha", "Cant": "58 Pzas"})
+        data.append({"M": "Cercha 15cm", "Cant": "58 Pzas"})
         
-    df = pd.DataFrame(data)
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(data), use_container_width=True, hide_index=True)
 
-# --- TAB 3: IA ---
+# --- TAB 3: ANÁLISIS FINANCIERO ---
 with tab3:
-    st.markdown("##### 🤖 Asistente Gemini")
+    st.markdown("### 💰 Tabla Comparativa de Costos")
     
-    # Campo para la API Key aquí si no está en sidebar
-    if not st.session_state.get("api_key_input"):
-         st.session_state.api_key_input = st.text_input("API Key (Google):", type="password")
+    # Cálculos Totales (Basados en la imagen)
+    # Losa Nervada Base (Comunes)
+    total_comunes_nervada = 2146.50 + 665.00 + 200.00 + 2625.00 + 400.00
+    costo_varilla = 812.00
+    costo_cercha = 580.00
+    
+    total_nervada_varilla = total_comunes_nervada + costo_varilla
+    total_nervada_cercha = total_comunes_nervada + costo_cercha
+    total_metalica = 12799.00
+    
+    # Layout de Columnas para Tablas
+    col_izq, col_der = st.columns(2)
+    
+    with col_izq:
+        st.markdown("#### 1. Losa Nervada (Concreto)")
+        df_nervada = pd.DataFrame(DATA_NERVADA)
+        
+        # Formatear columnas numéricas
+        st.dataframe(
+            df_nervada.style.format({"PRECIO ($)": "{:.2f}", "TOTAL ($)": "{:.2f}"}),
+            use_container_width=True,
+            hide_index=True
+        )
+        
+        st.markdown(f"""
+            <div class="financial-total">
+                Total con Varillas 3/8": <span>${total_nervada_varilla:,.2f}</span><br>
+                <span style="font-size:16px; color:#374151; font-weight:600;">Total con Cerchas: ${total_nervada_cercha:,.2f}</span>
+            </div>
+        """, unsafe_allow_html=True)
 
-    nota = st.text_area("Bitácora:", height=70, placeholder="Ej: Llovió hoy...")
-    if st.button("Generar Reporte", type="primary"):
-        with st.spinner("..."):
-            res = get_gemini_response(st.session_state.api_key_input, f"Reporte obra civil corto: {nota}")
-            st.success(res)
+    with col_der:
+        st.markdown("#### 2. Estructura Metálica")
+        df_metalica = pd.DataFrame(DATA_METALICA)
+        
+        st.dataframe(
+            df_metalica.style.format({"PRECIO ($)": "{:.2f}", "TOTAL ($)": "{:.2f}"}),
+            use_container_width=True,
+            hide_index=True
+        )
+        
+        st.markdown(f"""
+            <div class="financial-total">
+                Total Estructura Metálica: <span style="color:#dc2626;">${total_metalica:,.2f}</span>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.divider()
+    
+    # Gráfico Comparativo Rápido
+    st.markdown("#### 📊 Comparativa Visual")
+    chart_data = pd.DataFrame({
+        "Sistema Constructivo": ["Losa Nervada (Cercha)", "Losa Nervada (Varilla)", "Estructura Metálica"],
+        "Costo Total ($)": [total_nervada_cercha, total_nervada_varilla, total_metalica]
+    })
+    st.bar_chart(chart_data, x="Sistema Constructivo", y="Costo Total ($)", color=["#059669"])
+
+    st.warning("⚠️ **NOTA IMPORTANTE:** ESTOS COSTOS NO INCLUYEN TRANSPORTE Y ESTÁN EXENTOS DE GASTOS RELACIONADOS A MANO DE OBRA.")
 
 # --- SIDEBAR LIMPIO ---
 with st.sidebar:
@@ -324,11 +330,3 @@ with st.sidebar:
         pass
     st.markdown("### Configuración")
     st.caption("Ajustes del proyecto")
-
-# --- FOOTER ---
-st.markdown("""
-    <div class="custom-footer">
-        <b>Elaborado Por: Ing. Willians Hernández</b> (CIV 267.515)<br>
-        © 2024 HM Rendering Studio 3D
-    </div>
-""", unsafe_allow_html=True)
