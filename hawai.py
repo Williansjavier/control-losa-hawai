@@ -6,7 +6,7 @@ import time
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
     page_title="Dashboard Losa Club Hawai",
-    page_icon="🏗️",
+    page_icon="HMRenderigStudio3D-[Recuperado].gif",
     layout="wide",
     initial_sidebar_state="collapsed" 
 )
@@ -332,3 +332,4 @@ st.markdown("""
         © 2024 HM Rendering Studio 3D
     </div>
 """, unsafe_allow_html=True)
+
