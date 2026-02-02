@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import google.generativeai as genai
-from datetime import date
 import time
 
 # --- CONFIGURACIÓN DE PÁGINA ---
@@ -12,75 +11,126 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- ESTILOS CSS PERSONALIZADOS (NEGRO/BLANCO/GRIS) ---
+# --- ESTILOS CSS ROBUSTOS (FORZANDO TEMA CLARO) ---
 st.markdown("""
     <style>
-    /* Ajustes generales para tema monocromático */
-    .stApp {
+    /* 1. FORZAR FONDO Y TEXTO GENERAL (Estilo Modo Claro) */
+    [data-testid="stAppViewContainer"] {
+        background-color: #f3f4f6; /* Gris muy suave */
+    }
+    [data-testid="stHeader"] {
         background-color: #f3f4f6;
+    }
+    [data-testid="stSidebar"] {
+        background-color: #ffffff; /* Sidebar blanco */
+        border-right: 1px solid #e5e7eb;
+    }
+    
+    /* Forzar color de texto negro/gris oscuro para todo */
+    .stApp, .stMarkdown, p, h1, h2, h3, h4, h5, h6, span, div, label, .stSelectbox, .stTextInput {
+        color: #1f2937 !important; 
+        font-family: 'Source Sans Pro', sans-serif;
+    }
+
+    /* 2. TARJETAS (KPIs) - Replica del diseño React */
+    div[data-testid="stMetric"] {
+        background-color: #ffffff !important;
+        border: 1px solid #e5e7eb;
+        padding: 20px !important;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         color: #1f2937;
     }
-    .main-header {
-        font-family: 'Helvetica', sans-serif;
-        color: #111827;
+    div[data-testid="stMetricLabel"] {
+        color: #6b7280 !important; /* Gris medio para etiquetas */
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
     }
-    
-    /* Estilo para las tarjetas de métricas */
-    div[data-testid="stMetric"] {
-        background-color: white;
-        padding: 15px;
-        border-radius: 8px;
-        border-left: 5px solid #000;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    div[data-testid="stMetricValue"] {
+        color: #111827 !important; /* Negro fuerte para números */
+        font-size: 28px !important;
+        font-weight: 800 !important;
     }
-    
-    /* Logo Hexagonal CSS */
-    .hexagon-wrapper {
+
+    /* 3. LOGO HEXAGONAL PERSONALIZADO */
+    .logo-container {
         display: flex;
         align-items: center;
-        gap: 15px;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e5e7eb;
     }
     .hexagon {
-        width: 50px;
-        height: 55px;
-        background: black;
-        position: relative;
+        width: 60px;
+        height: 60px;
+        background-color: #111827; /* Negro casi puro */
+        color: white !important;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
         font-weight: bold;
-        font-size: 18px;
+        font-size: 20px;
         clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        margin-right: 15px;
     }
-    .brand-text h1 {
-        margin: 0;
+    .brand-title {
         font-size: 24px;
-        font-weight: 800;
+        font-weight: 900;
         line-height: 1;
-        color: #111827;
+        color: #111827 !important;
+        margin: 0;
     }
-    .brand-text span {
+    .brand-subtitle {
         font-size: 12px;
-        letter-spacing: 2px;
-        color: #6b7280;
+        letter-spacing: 3px;
         text-transform: uppercase;
+        color: #6b7280 !important;
+        margin: 0;
+    }
+
+    /* 4. TABS Y EXPANDERS */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+        background-color: transparent;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background-color: #ffffff;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        color: #4b5563;
+        padding: 10px 20px;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #111827 !important;
+        color: white !important;
     }
     
-    /* Firma del Ingeniero */
-    .engineer-signature {
-        margin-top: 50px;
+    /* Estilo para los expanders (Acordeón) */
+    .streamlit-expanderHeader {
+        background-color: white !important;
+        border: 1px solid #e5e7eb;
+        color: #111827 !important;
+        font-weight: 600;
+        border-radius: 8px;
+    }
+    
+    /* 5. FIRMA */
+    .signature-box {
+        margin-top: 40px;
         padding-top: 20px;
         border-top: 1px solid #e5e7eb;
-        font-size: 12px;
-        color: #4b5563;
         text-align: center;
     }
-    .engineer-name {
+    .signature-text {
+        color: #4b5563 !important;
+        font-size: 13px;
+    }
+    .signature-name {
+        color: #111827 !important;
         font-weight: bold;
-        color: #111827;
         display: block;
+        margin-top: 5px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -95,106 +145,110 @@ PROJECT_DATA = {
 }
 
 ACTIVITIES = [
-    {"id": 1, "title": "Montaje de Encofrado y Apuntalamiento", "duration": "5 Días", "desc": "Nivelación, colocación de parales y tendido de camillas."},
-    {"id": 2, "title": "Armado de Bloques y Acero", "duration": "4 Días", "desc": "Colocación de bloques de anime, armado de nervios y malla."},
-    {"id": 3, "title": "Vaciado de Concreto", "duration": "1 Día", "desc": "Vaciado monolítico f'c 210 kg/cm², vibrado y regleado."},
-    {"id": 4, "title": "Curado de Concreto", "duration": "7 Días", "desc": "Riego continuo de agua para hidratación."}
+    {"id": 1, "title": "1. Montaje de Encofrado", "duration": "5 Días", "desc": "Nivelación, colocación de parales y tendido de camillas."},
+    {"id": 2, "title": "2. Armado de Bloques y Acero", "duration": "4 Días", "desc": "Colocación de bloques de anime, armado de nervios y malla."},
+    {"id": 3, "title": "3. Vaciado de Concreto", "duration": "1 Día", "desc": "Vaciado monolítico f'c 210 kg/cm², vibrado y regleado."},
+    {"id": 4, "title": "4. Curado de Concreto", "duration": "7 Días", "desc": "Riego continuo de agua para hidratación."}
 ]
 
 # --- FUNCIONES DE IA (GEMINI) ---
 def get_gemini_response(api_key, prompt):
     if not api_key:
-        return "⚠️ Por favor ingresa tu API Key de Google Gemini en la barra lateral."
+        return "⚠️ CONFIGURACIÓN REQUERIDA: Por favor ingresa tu API Key de Google Gemini en la barra lateral izquierda."
     
     try:
         genai.configure(api_key=api_key)
-        # Usamos el modelo flash para rapidez
         model = genai.GenerativeModel('gemini-2.0-flash') 
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
-        return f"Error al conectar con Gemini: {str(e)}"
+        return f"❌ Error: {str(e)}"
 
 # --- INTERFAZ PRINCIPAL ---
 
-# 1. HEADER / LOGO
+# 1. HEADER CON LOGO ESTILO REACT
 st.markdown("""
-    <div class="hexagon-wrapper">
+    <div class="logo-container">
         <div class="hexagon">HM</div>
-        <div class="brand-text">
-            <h1>HM RENDERING</h1>
-            <span>STUDIO 3D</span>
+        <div>
+            <h1 class="brand-title">HM RENDERING</h1>
+            <p class="brand-subtitle">STUDIO 3D</p>
+        </div>
+        <div style="margin-left: auto; text-align: right;">
+            <h3 style="margin:0; font-size:18px; font-weight:bold; color:#1f2937;">PROYECTO CLUB HAWAI</h3>
+            <span style="font-size:12px; color:#6b7280;">EJECUCIÓN LOSA ENTREPISO</span>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
-st.title(f"Ejecución de Losa: {PROJECT_DATA['name']}")
-st.markdown("---")
-
-# 2. SIDEBAR (Configuración y Firma)
+# 2. SIDEBAR
 with st.sidebar:
-    st.header("⚙️ Configuración")
-    api_key = st.text_input("Gemini API Key", type="password", help="Necesaria para el asistente IA")
+    st.header("⚙️ Panel de Control")
+    api_key = st.text_input("🔑 Gemini API Key", type="password", help="Pega aquí tu clave para activar la IA")
     
-    st.markdown("---")
     st.markdown("### 📋 Ficha Técnica")
-    st.info(f"""
+    st.success(f"""
     **Tipo:** {PROJECT_DATA['type']}
     **Área:** {PROJECT_DATA['area']} m²
     **Concreto:** {PROJECT_DATA['strength']}
     """)
     
-    # FIRMA DEL INGENIERO (SOLICITADA)
+    # FIRMA
     st.markdown("""
-        <div class="engineer-signature">
-            <span class="engineer-name">Elaborado Por:</span>
-            Ing. Willians Hernandez<br>
-            CIV 267515
+        <div class="signature-box">
+            <span class="signature-text">Desarrollado Por:</span>
+            <span class="signature-name">Ing. Willians Hernandez</span>
+            <span class="signature-text">CIV 267.515</span>
         </div>
     """, unsafe_allow_html=True)
 
-# 3. KPIS (Métricas Clave)
+# 3. KPIS (TARJETAS)
 col1, col2, col3, col4 = st.columns(4)
-col1.metric("Área Total", f"{PROJECT_DATA['area']} m²", delta_color="off")
-col2.metric("Tiempo Estimado", PROJECT_DATA['duration'], delta_color="off")
-col3.metric("Resistencia Concreto", "210 kg/cm²", delta_color="off")
-col4.metric("Espesor Losa", "20 cm", delta_color="off")
+col1.metric("Área Total", f"{PROJECT_DATA['area']} m²")
+col2.metric("Tiempo Estimado", PROJECT_DATA['duration'])
+col3.metric("Resistencia Concreto", "210 kg/cm²")
+col4.metric("Espesor Losa", "20 cm")
 
-st.markdown("---")
+st.markdown("<br>", unsafe_allow_html=True)
 
-# 4. PESTAÑAS PRINCIPALES
-tab1, tab2, tab3 = st.tabs(["📅 Cronograma", "📦 Materiales", "✨ Asistente IA"])
+# 4. CONTENIDO PRINCIPAL
+tab1, tab2, tab3 = st.tabs(["📅 CRONOGRAMA", "📦 MATERIALES", "✨ ASISTENTE IA"])
 
 # --- TAB 1: CRONOGRAMA ---
 with tab1:
     st.subheader("Ruta Crítica de Ejecución")
     
-    for activity in ACTIVITIES:
-        with st.expander(f"{activity['title']} ({activity['duration']})", expanded=True):
-            st.write(activity['desc'])
-            # Barra de progreso visual simple
-            st.progress(0, text="Estado: Pendiente")
-
-    st.markdown("### 📝 Notas Técnicas")
-    st.warning("""
-    * **Vibrado:** Vibrar el concreto con aguja durante el vaciado.
-    * **Intersecciones:** Grifar ligeramente varillas en intersecciones viga-columna.
-    * **Curado:** Mantener curado húmedo por 7 días mínimo.
-    """)
+    col_act_1, col_act_2 = st.columns([2, 1])
+    
+    with col_act_1:
+        for activity in ACTIVITIES:
+            with st.expander(f"{activity['title']} ⏱️ {activity['duration']}", expanded=True):
+                st.write(f"**Descripción:** {activity['desc']}")
+                st.progress(0) # Barra visual estática
+    
+    with col_act_2:
+        st.info("""
+        **⚠️ Recomendaciones Técnicas:**
+        
+        * **Vibrado:** Vibrar el concreto con aguja durante el vaciado.
+        * **Acero:** Grifar varillas en intersecciones viga-columna.
+        * **Curado:** Mantener húmedo por 7 días.
+        """)
 
 # --- TAB 2: MATERIALES ---
 with tab2:
-    col_ctrl, col_display = st.columns([1, 3])
+    col_ctrl, col_display = st.columns([1, 2])
     
     with col_ctrl:
-        st.subheader("Opciones de Refuerzo")
+        st.markdown("### Configuración de Refuerzo")
         reinforcement_opt = st.radio(
             "Seleccione tipo de nervio:",
-            ("Opción A: Varilla 3/8\"", "Opción B: Cercha Electrosoldada")
+            ("Opción A: Varilla 3/8\"", "Opción B: Cercha Electrosoldada"),
+            help="Cambia el cálculo de materiales según el refuerzo elegido."
         )
     
     with col_display:
-        st.subheader("Inventario de Materiales")
+        st.markdown("### 📋 Inventario de Materiales")
         
         # Datos base
         materials_data = [
@@ -205,58 +259,56 @@ with tab2:
             {"Material": "Malla Electrosoldada", "Uso": "Acero Temperatura", "Cantidad": "4 Rollos"}
         ]
         
-        # Lógica condicional
+        # Lógica
         if "Opción A" in reinforcement_opt:
             materials_data.append({"Material": "Varilla 3/8\" (L=6m)", "Uso": "Refuerzo Nervios", "Cantidad": "116 Pzas"})
+            st.toast("Calculando para Varillas...", icon="🏗️")
         else:
             materials_data.append({"Material": "Cercha 15cm (L=6m)", "Uso": "Refuerzo Nervios", "Cantidad": "58 Pzas"})
+            st.toast("Calculando para Cerchas...", icon="🏗️")
             
         df_materials = pd.DataFrame(materials_data)
-        st.table(df_materials)
+        st.dataframe(df_materials, use_container_width=True, hide_index=True)
 
 # --- TAB 3: ASISTENTE IA ---
 with tab3:
-    st.subheader("Asistente de Obra Inteligente (Gemini)")
+    st.markdown("### 🤖 Asistente de Obra Inteligente (Gemini)")
     
     col_ai_1, col_ai_2 = st.columns(2)
     
     # Generador de Bitácora
     with col_ai_1:
-        st.markdown("#### 📔 Generador de Bitácora")
-        st.caption("Escribe notas rápidas y la IA redactará un asiento formal.")
-        
-        notes = st.text_area("Notas del día:", height=150, placeholder="Ej: Llovió a las 2pm, se vació medio camión, faltó un albañil...")
-        
-        if st.button("Generar Reporte Formal"):
-            with st.spinner("Redactando bitácora..."):
-                prompt_report = f"""
-                Actúa como un Ingeniero Civil Residente (Ing. Willians Hernandez). 
-                Redacta un asiento formal para el LIBRO DE OBRA del proyecto {PROJECT_DATA['name']}.
-                Notas crudas: "{notes}".
-                Estructura: Encabezado, Actividades, Incidencias, Conclusión. Tono técnico.
-                """
-                report_result = get_gemini_response(api_key, prompt_report)
-                st.markdown("---")
-                st.markdown(report_result)
+        with st.container(border=True):
+            st.markdown("#### 📔 Generador de Bitácora")
+            st.caption("Escribe notas rápidas (ej: llovió, falta material) y genera un reporte formal.")
+            
+            notes = st.text_area("Notas del día:", height=100)
+            
+            if st.button("Generar Reporte Formal", type="primary"):
+                with st.spinner("Redactando bitácora..."):
+                    prompt_report = f"""
+                    Actúa como el Ing. Residente Willians Hernandez. 
+                    Redacta un asiento formal para el LIBRO DE OBRA del proyecto {PROJECT_DATA['name']}.
+                    Notas crudas: "{notes}".
+                    Usa lenguaje técnico, menciona 'Incidencias' y 'Conclusiones'.
+                    """
+                    report_result = get_gemini_response(api_key, prompt_report)
+                    st.markdown(report_result)
 
     # Analista de Seguridad
     with col_ai_2:
-        st.markdown("#### 🛡️ Análisis de Riesgos")
-        st.caption("Selecciona una actividad para obtener un plan de seguridad.")
-        
-        activity_selected = st.selectbox("Actividad a analizar:", [act['title'] for act in ACTIVITIES])
-        
-        if st.button("Analizar Seguridad"):
-            with st.spinner("Analizando riesgos..."):
-                prompt_safety = f"""
-                Para la actividad: "{activity_selected}" en construcción de losa nervada.
-                Genera: 1. Tres riesgos críticos. 2. EPP Obligatorio. 3. Regla de Oro.
-                Formato Markdown.
-                """
-                safety_result = get_gemini_response(api_key, prompt_safety)
-                st.success(f"Análisis para: {activity_selected}")
-                st.markdown(safety_result)
-
-# Footer
-st.markdown("---")
-st.markdown("© 2024 HM Rendering Studio 3D - Todos los derechos reservados.")
+        with st.container(border=True):
+            st.markdown("#### 🛡️ Análisis de Riesgos")
+            st.caption("Selecciona una actividad para obtener el plan de seguridad.")
+            
+            activity_selected = st.selectbox("Actividad:", [act['title'] for act in ACTIVITIES])
+            
+            if st.button("Analizar Seguridad"):
+                with st.spinner("Consultando normas de seguridad..."):
+                    prompt_safety = f"""
+                    Para la actividad "{activity_selected}" en una losa nervada:
+                    Lista 3 riesgos críticos y el EPP obligatorio. Sé breve y directo.
+                    """
+                    safety_result = get_gemini_response(api_key, prompt_safety)
+                    st.success(f"Análisis para: {activity_selected}")
+                    st.markdown(safety_result)
