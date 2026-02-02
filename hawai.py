@@ -137,7 +137,25 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* 6. FOOTER FIRMA (ESTILO VISIBLE) */
+    /* 6. CORRECCIÓN MENÚS DESPLEGABLES (EXPANDERS) */
+    div[data-testid="stExpander"] details summary p {
+        color: #111827 !important; /* Título siempre negro */
+        font-weight: 700;
+    }
+    div[data-testid="stExpander"] details[open] summary p {
+        color: #111827 !important; /* Título negro al abrir */
+    }
+    div[data-testid="stExpander"] {
+        background-color: #ffffff !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 8px;
+        color: #111827 !important;
+    }
+    div[data-testid="stExpander"] .streamlit-expanderContent {
+        color: #111827 !important;
+    }
+
+    /* 7. FOOTER FIRMA (ESTILO VISIBLE) */
     .main-footer {
         margin-top: 50px;
         padding: 20px;
