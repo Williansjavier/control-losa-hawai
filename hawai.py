@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed" 
 )
 
-# --- ESTILOS CSS ROBUSTOS (RESPONSIVE + ALTO CONTRASTE) ---
+# --- ESTILOS CSS ROBUSTOS (RESPONSIVE + ALTO CONTRASTE + FIX EXPANDERS) ---
 st.markdown("""
     <style>
     /* 1. FORZAR MODO CLARO Y CONTRASTE EN TODO EL SITIO */
@@ -79,7 +79,7 @@ st.markdown("""
         font-size: 18px;
         clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
         margin-right: 15px;
-        flex-shrink: 0; /* Evita que el logo se aplaste */
+        flex-shrink: 0;
     }
     .brand-info {
         flex-grow: 1;
@@ -109,9 +109,8 @@ st.markdown("""
             width: 100%;
         }
         div[data-testid="stMetric"] {
-            margin-bottom: 10px; /* Separación entre tarjetas en móvil */
+            margin-bottom: 10px;
         }
-        /* Ajuste de pestañas en móvil */
         .stTabs [data-baseweb="tab-list"] {
             flex-wrap: wrap; 
         }
@@ -137,25 +136,46 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* 6. CORRECCIÓN MENÚS DESPLEGABLES (EXPANDERS) */
-    div[data-testid="stExpander"] details summary p {
-        color: #111827 !important; /* Título siempre negro */
-        font-weight: 700;
-    }
-    div[data-testid="stExpander"] details[open] summary p {
-        color: #111827 !important; /* Título negro al abrir */
-    }
+    /* 6. CORRECCIÓN MENÚS DESPLEGABLES (EXPANDERS) - SOLUCIÓN DEFINITIVA */
     div[data-testid="stExpander"] {
         background-color: #ffffff !important;
         border: 1px solid #e5e7eb !important;
-        border-radius: 8px;
+        border-radius: 8px !important;
+        color: #111827 !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    
+    /* Cabecera del expander (Cerrado y Abierto) */
+    div[data-testid="stExpander"] details summary {
+        background-color: #f9fafb !important;
+        border-bottom: 1px solid #e5e7eb !important;
         color: #111827 !important;
     }
-    div[data-testid="stExpander"] .streamlit-expanderContent {
-        color: #111827 !important;
+    div[data-testid="stExpander"] details[open] summary {
+        background-color: #f3f4f6 !important;
+        border-bottom: 1px solid #d1d5db !important;
     }
 
-    /* 7. FOOTER FIRMA (ESTILO VISIBLE) */
+    /* Forzar color NEGRO al texto del título siempre */
+    div[data-testid="stExpander"] details summary p,
+    div[data-testid="stExpander"] details summary span {
+        color: #111827 !important;
+        font-weight: 700 !important;
+        font-size: 15px !important;
+    }
+    
+    /* Flecha del expander */
+    div[data-testid="stExpander"] details summary svg {
+        color: #4b5563 !important;
+        fill: #4b5563 !important;
+    }
+
+    /* Contenido interno */
+    div[data-testid="stExpander"] div[role="group"] {
+        padding: 15px !important;
+    }
+
+    /* 7. FOOTER FIRMA */
     .main-footer {
         margin-top: 50px;
         padding: 20px;
@@ -185,11 +205,12 @@ PROJECT_DATA = {
     "duration": "~17 Días"
 }
 
+# ACTUALIZADO: Iconos añadidos a las actividades
 ACTIVITIES = [
-    {"id": 1, "title": "1. Montaje de Encofrado", "duration": "5 Días", "desc": "Nivelación, colocación de parales y tendido de camillas."},
-    {"id": 2, "title": "2. Armado de Bloques y Acero", "duration": "4 Días", "desc": "Colocación de bloques de anime, armado de nervios y malla."},
-    {"id": 3, "title": "3. Vaciado de Concreto", "duration": "1 Día", "desc": "Vaciado monolítico f'c 210 kg/cm², vibrado y regleado."},
-    {"id": 4, "title": "4. Curado de Concreto", "duration": "7 Días", "desc": "Riego continuo de agua para hidratación."}
+    {"id": 1, "title": "Montaje de Encofrado", "icon": "🏗️", "duration": "5 Días", "desc": "Nivelación, colocación de parales y tendido de camillas."},
+    {"id": 2, "title": "Armado de Bloques y Acero", "icon": "⛓️", "duration": "4 Días", "desc": "Colocación de bloques de anime, armado de nervios y malla."},
+    {"id": 3, "title": "Vaciado de Concreto", "icon": "🚛", "duration": "1 Día", "desc": "Vaciado monolítico f'c 210 kg/cm², vibrado y regleado."},
+    {"id": 4, "title": "Curado de Concreto", "icon": "💧", "duration": "7 Días", "desc": "Riego continuo de agua para hidratación."}
 ]
 
 # --- FUNCIONES DE IA (GEMINI) ---
@@ -234,12 +255,10 @@ with st.sidebar:
     **Concreto:** {PROJECT_DATA['strength']}
     """)
     
-    # Firma en Sidebar (Opcional, también está en el footer)
     st.markdown("---")
-    st.caption("v1.2 Mobile Optimized")
+    st.caption("v1.3 - Iconos y Visibilidad")
 
 # 3. KPIS (TARJETAS)
-# Usamos columnas estándar, pero el CSS se encarga de que no se vean mal en móvil
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 kpi1.metric("Área Total", f"{PROJECT_DATA['area']} m²")
 kpi2.metric("Tiempo Total", PROJECT_DATA['duration'])
@@ -259,7 +278,8 @@ with tab1:
     
     with col_act_1:
         for activity in ACTIVITIES:
-            with st.expander(f"{activity['title']} ({activity['duration']})", expanded=True):
+            # ACTUALIZADO: Título con icono y formato más limpio
+            with st.expander(f"{activity['icon']} {activity['title']} | ⏱️ {activity['duration']}", expanded=True):
                 st.markdown(f"**Descripción:** {activity['desc']}")
                 st.progress(0)
     
@@ -274,7 +294,6 @@ with tab1:
 
 # --- TAB 2: MATERIALES ---
 with tab2:
-    # En móvil, las columnas se apilan automáticamente
     col_ctrl, col_display = st.columns([1, 2])
     
     with col_ctrl:
@@ -303,7 +322,6 @@ with tab2:
             
         df_materials = pd.DataFrame(materials_data)
         
-        # Mostramos tabla estática para mejor legibilidad en móvil que dataframe interactivo
         st.table(df_materials)
 
 # --- TAB 3: ASISTENTE IA ---
@@ -324,6 +342,7 @@ with tab3:
 
     with col_ai_2:
         st.markdown("#### 🛡️ Análisis de Seguridad")
+        # Usamos el título original para la selección
         act = st.selectbox("Actividad:", [a['title'] for a in ACTIVITIES])
         
         if st.button("Analizar Riesgos", use_container_width=True):
