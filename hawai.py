@@ -91,7 +91,7 @@ const Dashboard = () => {
     const apiKey = ""; // La clave se inyecta en tiempo de ejecución
     try {
       const response = await fetch(
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key={apiKey}"
+       url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key={apiKey}"
         {
           method: 'POST',
           headers: {
@@ -120,7 +120,7 @@ const Dashboard = () => {
 
   const handleGenerateReport = async () => {
     if (!logNotes.trim()) return;
-    const prompt = `Actúa como un Ingeniero Civil Residente experto. Redacta un asiento formal para el CUADERNO DE BITÁCORA (Libro de Obra) para el proyecto "Losa Entrepiso Club Hawai" (265m2).
+    prompt = "Actúa como un Ingeniero Civil Residente experto. Redacta un asiento formal para el CUADERNO DE BITÁCORA (Libro de Obra) para el proyecto..."
     
     Usa estas notas crudas del usuario sobre lo que pasó hoy: "${logNotes}".
     
@@ -541,3 +541,4 @@ const Dashboard = () => {
 
 
 export default Dashboard;
+
