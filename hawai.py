@@ -128,12 +128,15 @@ st.markdown("""
 
     /* 7. FOOTER */
     .custom-footer {
-        margin-top: 40px;
+        margin-top: 50px;
         padding-top: 20px;
-        border-top: 1px solid #e5e7eb;
+        padding-bottom: 20px;
+        border-top: 2px solid #e5e7eb;
         text-align: center;
-        font-size: 12px;
-        color: #6b7280 !important;
+        background-color: #ffffff;
+        color: #111827 !important;
+        font-weight: bold;
+        letter-spacing: 0.5px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -336,3 +339,11 @@ with st.sidebar:
         pass
     st.markdown("### Configuración")
     st.caption("Ajustes del proyecto")
+
+# --- FOOTER ---
+st.markdown("""
+    <div class="custom-footer">
+        ELABORADO POR ING. WILLIANS HERNÁNDEZ CIV 267515<br>
+        <span style="font-size: 11px; font-weight: normal;">© 2024 HM Rendering Studio 3D</span>
+    </div>
+""", unsafe_allow_html=True)
