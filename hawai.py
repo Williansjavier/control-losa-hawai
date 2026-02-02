@@ -25,6 +25,7 @@ st.markdown("""
     header[data-testid="stHeader"] { background-color: #f4f4f5 !important; }
     section[data-testid="stSidebar"] { background-color: #ffffff !important; border-right: 1px solid #e5e7eb; }
     
+    /* REGLA MAESTRA DE TEXTO: Todo negro por defecto */
     h1, h2, h3, h4, h5, h6, p, div, span, label, li, 
     .stMarkdown, .stTextInput input, .stSelectbox, .stTextArea textarea {
         color: #111827 !important;
@@ -90,7 +91,7 @@ st.markdown("""
     .streamlit-expanderHeader p { font-weight: 700 !important; font-size: 15px !important; color: #111827 !important; }
     .streamlit-expanderHeader svg { fill: #111827 !important; }
 
-    /* 5. TABS */
+    /* 5. TABS (CORREGIDO) */
     .stTabs [data-baseweb="tab-list"] { gap: 8px; }
     .stTabs [data-baseweb="tab"] {
         background-color: white;
@@ -100,10 +101,14 @@ st.markdown("""
         font-weight: 600;
         font-size: 14px;
     }
+    /* Estilo para tab seleccionado */
     .stTabs [aria-selected="true"] {
         background-color: #111827 !important;
-        color: white !important;
         border-color: #111827;
+    }
+    /* EXCEPCIÓN CRÍTICA: Texto BLANCO en tab seleccionado */
+    .stTabs [aria-selected="true"] p {
+        color: #ffffff !important;
     }
     
     /* 6. TABLAS FINANCIERAS */
@@ -221,7 +226,8 @@ kpi_html = f"""
 st.markdown(kpi_html, unsafe_allow_html=True)
 
 # 3. CONTENIDO
-tab1, tab2, tab3 = st.tabs(["CRONOGRAMA", "MATERIALES", "ANÁLISIS FINANCIERO"])
+# AÑADIDOS ICONOS A LOS NOMBRES DE LAS PESTAÑAS
+tab1, tab2, tab3 = st.tabs(["📅 CRONOGRAMA", "📦 MATERIALES", "💰 ANÁLISIS FINANCIERO"])
 
 # --- TAB 1: CRONOGRAMA ---
 with tab1:
