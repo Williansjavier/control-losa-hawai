@@ -1,4 +1,5 @@
-streamlit
-pandas
+import streamlit as st
+import pandas as pd
 import google.generativeai as genai
-plotly
+from datetime import date
+import time
