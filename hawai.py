@@ -8,129 +8,152 @@ st.set_page_config(
     page_title="Dashboard Losa Club Hawai",
     page_icon="🏗️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed" 
 )
 
-# --- ESTILOS CSS ROBUSTOS (FORZANDO TEMA CLARO) ---
+# --- ESTILOS CSS ROBUSTOS (RESPONSIVE + ALTO CONTRASTE) ---
 st.markdown("""
     <style>
-    /* 1. FORZAR FONDO Y TEXTO GENERAL (Estilo Modo Claro) */
+    /* 1. FORZAR MODO CLARO Y CONTRASTE EN TODO EL SITIO */
     [data-testid="stAppViewContainer"] {
-        background-color: #f3f4f6; /* Gris muy suave */
+        background-color: #f3f4f6;
     }
     [data-testid="stHeader"] {
         background-color: #f3f4f6;
     }
     [data-testid="stSidebar"] {
-        background-color: #ffffff; /* Sidebar blanco */
+        background-color: #ffffff;
         border-right: 1px solid #e5e7eb;
     }
     
-    /* Forzar color de texto negro/gris oscuro para todo */
-    .stApp, .stMarkdown, p, h1, h2, h3, h4, h5, h6, span, div, label, .stSelectbox, .stTextInput {
-        color: #1f2937 !important; 
+    /* REGLA MAESTRA DE TEXTO: Fuerza negro casi puro en todo */
+    h1, h2, h3, h4, h5, h6, p, span, div, label, li, 
+    .stMarkdown, .stTextInput, .stSelectbox, .stRadio, 
+    [data-testid="stWidgetLabel"], .stDataFrame, .stTable {
+        color: #111827 !important; /* Negro tinta */
         font-family: 'Source Sans Pro', sans-serif;
     }
+    
+    /* Excepción para texto dentro de botones primarios (usualmente blanco) */
+    button[kind="primary"] p, button[kind="primary"] span {
+        color: #ffffff !important;
+    }
 
-    /* 2. TARJETAS (KPIs) - Replica del diseño React */
+    /* 2. TARJETAS (KPIs) */
     div[data-testid="stMetric"] {
         background-color: #ffffff !important;
-        border: 1px solid #e5e7eb;
-        padding: 20px !important;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        color: #1f2937;
+        border: 1px solid #d1d5db; /* Borde más visible */
+        padding: 15px !important;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     div[data-testid="stMetricLabel"] {
-        color: #6b7280 !important; /* Gris medio para etiquetas */
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        text-transform: uppercase;
+        color: #4b5563 !important; /* Gris oscuro para etiquetas */
+        font-weight: 700 !important;
     }
     div[data-testid="stMetricValue"] {
-        color: #111827 !important; /* Negro fuerte para números */
-        font-size: 28px !important;
-        font-weight: 800 !important;
+        color: #000000 !important; /* Negro puro para números */
     }
 
-    /* 3. LOGO HEXAGONAL PERSONALIZADO */
+    /* 3. LOGO PERSONALIZADO (ADAPTABLE) */
     .logo-container {
         display: flex;
         align-items: center;
-        margin-bottom: 25px;
+        margin-bottom: 20px;
         padding-bottom: 20px;
         border-bottom: 2px solid #e5e7eb;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     .hexagon {
-        width: 60px;
-        height: 60px;
-        background-color: #111827; /* Negro casi puro */
+        width: 50px;
+        height: 50px;
+        background-color: #000000;
         color: white !important;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: bold;
-        font-size: 20px;
+        font-weight: 900;
+        font-size: 18px;
         clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
         margin-right: 15px;
+        flex-shrink: 0; /* Evita que el logo se aplaste */
+    }
+    .brand-info {
+        flex-grow: 1;
     }
     .brand-title {
-        font-size: 24px;
+        font-size: 22px;
         font-weight: 900;
-        line-height: 1;
-        color: #111827 !important;
+        line-height: 1.1;
         margin: 0;
     }
-    .brand-subtitle {
-        font-size: 12px;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-        color: #6b7280 !important;
-        margin: 0;
+    .project-info {
+        text-align: right;
     }
 
-    /* 4. TABS Y EXPANDERS */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
-        background-color: transparent;
+    /* 4. OPTIMIZACIÓN MÓVIL (MEDIA QUERIES) */
+    @media only screen and (max-width: 768px) {
+        .logo-container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .project-info {
+            text-align: left;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid #eee;
+            width: 100%;
+        }
+        div[data-testid="stMetric"] {
+            margin-bottom: 10px; /* Separación entre tarjetas en móvil */
+        }
+        /* Ajuste de pestañas en móvil */
+        .stTabs [data-baseweb="tab-list"] {
+            flex-wrap: wrap; 
+        }
+        .stTabs [data-baseweb="tab"] {
+            flex-grow: 1;
+            text-align: center;
+        }
     }
+
+    /* 5. TABS Y ELEMENTOS UI */
     .stTabs [data-baseweb="tab"] {
         background-color: #ffffff;
-        border-radius: 6px;
         border: 1px solid #e5e7eb;
-        color: #4b5563;
-        padding: 10px 20px;
+        color: #374151 !important;
+        font-weight: 600;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #111827 !important;
-        color: white !important;
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        border-color: #000000;
     }
-    
-    /* Estilo para los expanders (Acordeón) */
-    .streamlit-expanderHeader {
-        background-color: white !important;
-        border: 1px solid #e5e7eb;
-        color: #111827 !important;
-        font-weight: 600;
+    .stTabs [aria-selected="true"] p {
+        color: #ffffff !important;
+    }
+
+    /* 6. FOOTER FIRMA (ESTILO VISIBLE) */
+    .main-footer {
+        margin-top: 50px;
+        padding: 20px;
+        border-top: 2px solid #e5e7eb;
+        text-align: center;
+        background-color: #ffffff;
         border-radius: 8px;
     }
-    
-    /* 5. FIRMA */
-    .signature-box {
-        margin-top: 40px;
-        padding-top: 20px;
-        border-top: 1px solid #e5e7eb;
-        text-align: center;
-    }
-    .signature-text {
+    .main-footer p {
+        margin: 0;
+        font-size: 14px;
         color: #4b5563 !important;
-        font-size: 13px;
     }
-    .signature-name {
-        color: #111827 !important;
-        font-weight: bold;
-        display: block;
-        margin-top: 5px;
+    .main-footer strong {
+        color: #000000 !important;
+        font-size: 16px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -154,7 +177,7 @@ ACTIVITIES = [
 # --- FUNCIONES DE IA (GEMINI) ---
 def get_gemini_response(api_key, prompt):
     if not api_key:
-        return "⚠️ CONFIGURACIÓN REQUERIDA: Por favor ingresa tu API Key de Google Gemini en la barra lateral izquierda."
+        return "⚠️ AVISO: Ingresa tu API Key en el menú lateral (flecha arriba a la izquierda) para usar la IA."
     
     try:
         genai.configure(api_key=api_key)
@@ -162,52 +185,48 @@ def get_gemini_response(api_key, prompt):
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
-        return f"❌ Error: {str(e)}"
+        return f"❌ Error de conexión: {str(e)}"
 
 # --- INTERFAZ PRINCIPAL ---
 
-# 1. HEADER CON LOGO ESTILO REACT
+# 1. HEADER (Optimizado para Móvil)
 st.markdown("""
     <div class="logo-container">
         <div class="hexagon">HM</div>
-        <div>
+        <div class="brand-info">
             <h1 class="brand-title">HM RENDERING</h1>
-            <p class="brand-subtitle">STUDIO 3D</p>
+            <span style="font-size:12px; letter-spacing:2px; text-transform:uppercase; font-weight:bold;">STUDIO 3D</span>
         </div>
-        <div style="margin-left: auto; text-align: right;">
-            <h3 style="margin:0; font-size:18px; font-weight:bold; color:#1f2937;">PROYECTO CLUB HAWAI</h3>
-            <span style="font-size:12px; color:#6b7280;">EJECUCIÓN LOSA ENTREPISO</span>
+        <div class="project-info">
+            <div style="font-weight:900; font-size:16px;">PROYECTO CLUB HAWAI</div>
+            <div style="font-size:12px; color:#4b5563;">EJECUCIÓN LOSA ENTREPISO</div>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
 # 2. SIDEBAR
 with st.sidebar:
-    st.header("⚙️ Panel de Control")
-    api_key = st.text_input("🔑 Gemini API Key", type="password", help="Pega aquí tu clave para activar la IA")
+    st.header("⚙️ Configuración")
+    api_key = st.text_input("🔑 Gemini API Key", type="password", help="Necesaria para el asistente inteligente")
     
     st.markdown("### 📋 Ficha Técnica")
-    st.success(f"""
+    st.info(f"""
     **Tipo:** {PROJECT_DATA['type']}
     **Área:** {PROJECT_DATA['area']} m²
     **Concreto:** {PROJECT_DATA['strength']}
     """)
     
-    # FIRMA
-    st.markdown("""
-        <div class="signature-box">
-            <span class="signature-text">Desarrollado Por:</span>
-            <span class="signature-name">Ing. Willians Hernandez</span>
-            <span class="signature-text">CIV 267.515</span>
-        </div>
-    """, unsafe_allow_html=True)
+    # Firma en Sidebar (Opcional, también está en el footer)
+    st.markdown("---")
+    st.caption("v1.2 Mobile Optimized")
 
 # 3. KPIS (TARJETAS)
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Área Total", f"{PROJECT_DATA['area']} m²")
-col2.metric("Tiempo Estimado", PROJECT_DATA['duration'])
-col3.metric("Resistencia Concreto", "210 kg/cm²")
-col4.metric("Espesor Losa", "20 cm")
+# Usamos columnas estándar, pero el CSS se encarga de que no se vean mal en móvil
+kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+kpi1.metric("Área Total", f"{PROJECT_DATA['area']} m²")
+kpi2.metric("Tiempo Total", PROJECT_DATA['duration'])
+kpi3.metric("Resistencia", "210 kg/cm²")
+kpi4.metric("Espesor", "20 cm")
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -222,35 +241,35 @@ with tab1:
     
     with col_act_1:
         for activity in ACTIVITIES:
-            with st.expander(f"{activity['title']} ⏱️ {activity['duration']}", expanded=True):
-                st.write(f"**Descripción:** {activity['desc']}")
-                st.progress(0) # Barra visual estática
+            with st.expander(f"{activity['title']} ({activity['duration']})", expanded=True):
+                st.markdown(f"**Descripción:** {activity['desc']}")
+                st.progress(0)
     
     with col_act_2:
-        st.info("""
-        **⚠️ Recomendaciones Técnicas:**
-        
-        * **Vibrado:** Vibrar el concreto con aguja durante el vaciado.
-        * **Acero:** Grifar varillas en intersecciones viga-columna.
-        * **Curado:** Mantener húmedo por 7 días.
-        """)
+        with st.container(border=True):
+            st.markdown("#### ⚠️ Recomendaciones")
+            st.markdown("""
+            * **Vibrado:** Uso obligatorio de aguja.
+            * **Acero:** Grifar en intersecciones.
+            * **Curado:** 7 días continuos.
+            """)
 
 # --- TAB 2: MATERIALES ---
 with tab2:
+    # En móvil, las columnas se apilan automáticamente
     col_ctrl, col_display = st.columns([1, 2])
     
     with col_ctrl:
-        st.markdown("### Configuración de Refuerzo")
+        st.markdown("#### Configuración")
         reinforcement_opt = st.radio(
-            "Seleccione tipo de nervio:",
-            ("Opción A: Varilla 3/8\"", "Opción B: Cercha Electrosoldada"),
-            help="Cambia el cálculo de materiales según el refuerzo elegido."
+            "Tipo de Refuerzo:",
+            ("Opción A: Varilla 3/8\"", "Opción B: Cercha"),
+            help="Cambia el cálculo de materiales."
         )
     
     with col_display:
-        st.markdown("### 📋 Inventario de Materiales")
+        st.markdown("#### 📋 Listado de Materiales")
         
-        # Datos base
         materials_data = [
             {"Material": "Cemento Gris Portland", "Uso": "Concreto", "Cantidad": "159 Sacos"},
             {"Material": "Piedra Picada", "Uso": "Agregado Grueso", "Cantidad": "19 m³"},
@@ -259,56 +278,49 @@ with tab2:
             {"Material": "Malla Electrosoldada", "Uso": "Acero Temperatura", "Cantidad": "4 Rollos"}
         ]
         
-        # Lógica
         if "Opción A" in reinforcement_opt:
             materials_data.append({"Material": "Varilla 3/8\" (L=6m)", "Uso": "Refuerzo Nervios", "Cantidad": "116 Pzas"})
-            st.toast("Calculando para Varillas...", icon="🏗️")
         else:
             materials_data.append({"Material": "Cercha 15cm (L=6m)", "Uso": "Refuerzo Nervios", "Cantidad": "58 Pzas"})
-            st.toast("Calculando para Cerchas...", icon="🏗️")
             
         df_materials = pd.DataFrame(materials_data)
-        st.dataframe(df_materials, use_container_width=True, hide_index=True)
+        
+        # Mostramos tabla estática para mejor legibilidad en móvil que dataframe interactivo
+        st.table(df_materials)
 
 # --- TAB 3: ASISTENTE IA ---
 with tab3:
-    st.markdown("### 🤖 Asistente de Obra Inteligente (Gemini)")
+    st.markdown("### 🤖 Asistente de Obra (Gemini)")
     
     col_ai_1, col_ai_2 = st.columns(2)
     
-    # Generador de Bitácora
     with col_ai_1:
-        with st.container(border=True):
-            st.markdown("#### 📔 Generador de Bitácora")
-            st.caption("Escribe notas rápidas (ej: llovió, falta material) y genera un reporte formal.")
-            
-            notes = st.text_area("Notas del día:", height=100)
-            
-            if st.button("Generar Reporte Formal", type="primary"):
-                with st.spinner("Redactando bitácora..."):
-                    prompt_report = f"""
-                    Actúa como el Ing. Residente Willians Hernandez. 
-                    Redacta un asiento formal para el LIBRO DE OBRA del proyecto {PROJECT_DATA['name']}.
-                    Notas crudas: "{notes}".
-                    Usa lenguaje técnico, menciona 'Incidencias' y 'Conclusiones'.
-                    """
-                    report_result = get_gemini_response(api_key, prompt_report)
-                    st.markdown(report_result)
+        st.markdown("#### 📔 Bitácora Automática")
+        notes = st.text_area("¿Qué pasó hoy en la obra?", height=100, placeholder="Ej: Se vaciaron 10m3 de concreto...")
+        
+        if st.button("Generar Reporte", type="primary", use_container_width=True):
+            with st.spinner("Escribiendo..."):
+                prompt = f"Como Ing. Residente, escribe un reporte formal de obra para {PROJECT_DATA['name']} basado en: {notes}. Incluye incidencias."
+                res = get_gemini_response(api_key, prompt)
+                st.info(res)
 
-    # Analista de Seguridad
     with col_ai_2:
-        with st.container(border=True):
-            st.markdown("#### 🛡️ Análisis de Riesgos")
-            st.caption("Selecciona una actividad para obtener el plan de seguridad.")
-            
-            activity_selected = st.selectbox("Actividad:", [act['title'] for act in ACTIVITIES])
-            
-            if st.button("Analizar Seguridad"):
-                with st.spinner("Consultando normas de seguridad..."):
-                    prompt_safety = f"""
-                    Para la actividad "{activity_selected}" en una losa nervada:
-                    Lista 3 riesgos críticos y el EPP obligatorio. Sé breve y directo.
-                    """
-                    safety_result = get_gemini_response(api_key, prompt_safety)
-                    st.success(f"Análisis para: {activity_selected}")
-                    st.markdown(safety_result)
+        st.markdown("#### 🛡️ Análisis de Seguridad")
+        act = st.selectbox("Actividad:", [a['title'] for a in ACTIVITIES])
+        
+        if st.button("Analizar Riesgos", use_container_width=True):
+            with st.spinner("Analizando..."):
+                prompt = f"Lista 3 riesgos críticos y EPP para la actividad: {act}."
+                res = get_gemini_response(api_key, prompt)
+                st.success(res)
+
+# --- FOOTER CON FIRMA (VISIBLE EN MÓVIL) ---
+st.markdown("""
+    <div class="main-footer">
+        <p>Elaborado Por:</p>
+        <strong>Ing. Willians Hernandez</strong>
+        <p>CIV 267.515</p>
+        <br>
+        <p style="font-size:11px; opacity:0.7;">© 2024 HM Rendering Studio 3D</p>
+    </div>
+""", unsafe_allow_html=True)
