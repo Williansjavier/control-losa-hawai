@@ -6,12 +6,12 @@ import time
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
     page_title="Dashboard Losa Club Hawai",
-    page_icon="HMRenderigStudio3D-[Recuperado].gif",
+    page_icon="🏗️",
     layout="wide",
     initial_sidebar_state="collapsed" 
 )
 
-# --- ESTILOS CSS CORRECTIVOS (FORZADO DE MODO CLARO TOTAL) ---
+# --- ESTILOS CSS CORRECTIVOS ---
 st.markdown("""
     <style>
     /* 1. RESETEO TOTAL DE COLORES (FUERZA BRUTA MODO CLARO) */
@@ -22,148 +22,99 @@ st.markdown("""
         --text-color: #111827;
         --font: "Source Sans Pro", sans-serif;
     }
+    .stApp { background-color: #f4f4f5 !important; color: #111827 !important; }
+    header[data-testid="stHeader"] { background-color: #f4f4f5 !important; }
+    section[data-testid="stSidebar"] { background-color: #ffffff !important; border-right: 1px solid #e5e7eb; }
     
-    /* Fondo General de la App */
-    .stApp {
-        background-color: #f4f4f5 !important;
-        color: #111827 !important;
-    }
-    
-    /* Header superior */
-    header[data-testid="stHeader"] {
-        background-color: #f4f4f5 !important;
-    }
-    
-    /* Sidebar */
-    section[data-testid="stSidebar"] {
-        background-color: #ffffff !important;
-        border-right: 1px solid #e5e7eb;
-    }
-    
-    /* REGLA MAESTRA DE TEXTO: Todo negro, sin excepción */
     h1, h2, h3, h4, h5, h6, p, div, span, label, li, 
     .stMarkdown, .stTextInput input, .stSelectbox, .stTextArea textarea {
         color: #111827 !important;
     }
 
-    /* 2. TARJETAS KPI (REDUCIDAS Y COMPACTAS) */
+    /* 2. HEADER TIPO BANNER */
+    .header-image-container {
+        width: 100%;
+        border-radius: 0px 0px 15px 15px; /* Bordes redondeados solo abajo */
+        overflow: hidden;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .stImage {
+        margin-bottom: 20px;
+    }
+    /* Eliminar padding superior extra de Streamlit para que el banner suba */
+    .block-container {
+        padding-top: 2rem !important;
+    }
+
+    /* 3. TARJETAS KPI (GRID) */
     .kpi-container {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 10px;
-        margin-bottom: 20px;
+        gap: 15px;
+        margin-bottom: 25px;
     }
     .kpi-card {
         background-color: white;
         border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 10px 15px; /* Padding reducido */
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        border-radius: 10px;
+        padding: 12px 18px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
         display: flex;
         align-items: center;
-        transition: transform 0.2s;
+        transition: all 0.2s ease;
     }
     .kpi-card:hover {
-        border-color: #000;
-        transform: translateY(-2px);
+        border-color: #111827;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
     .kpi-icon {
         background-color: #f3f4f6;
-        border-radius: 6px;
-        width: 32px; /* Más pequeño */
-        height: 32px; /* Más pequeño */
+        border-radius: 8px;
+        width: 38px;
+        height: 38px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
-        margin-right: 12px;
+        font-size: 18px;
+        margin-right: 15px;
         color: #000 !important;
     }
-    .kpi-content {
-        display: flex;
-        flex-direction: column;
-    }
-    .kpi-label {
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        color: #6b7280 !important;
-        line-height: 1;
-        margin-bottom: 4px;
-    }
-    .kpi-value {
-        font-size: 16px; /* Texto más compacto */
-        font-weight: 800;
-        color: #111827 !important;
-        line-height: 1;
-    }
+    .kpi-content { display: flex; flex-direction: column; }
+    .kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #6b7280 !important; margin-bottom: 2px; }
+    .kpi-value { font-size: 18px; font-weight: 900; color: #111827 !important; }
 
-    /* 3. MENÚS DESPLEGABLES (EXPANDERS) - CORRECCIÓN DE FONDO NEGRO */
+    /* 4. EXPANDERS (RUTA CRÍTICA) */
     div[data-testid="stExpander"] {
         background-color: #ffffff !important;
         border: 1px solid #e5e7eb !important;
         border-radius: 8px !important;
         color: #000000 !important;
+        margin-bottom: 10px;
     }
-    
-    /* Cabecera del expander */
-    .streamlit-expanderHeader {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    
-    /* Texto del título del expander */
-    .streamlit-expanderHeader p {
-        font-weight: 700 !important;
-        font-size: 15px !important;
-    }
-
-    /* Contenido interno del expander */
-    div[data-testid="stExpander"] div[role="group"] {
-        background-color: #ffffff !important;
-    }
-    
-    /* Icono de flecha */
-    .streamlit-expanderHeader svg {
-        color: #000000 !important;
-        fill: #000000 !important;
-    }
-
-    /* 4. ANIMACIÓN DE CASCADA (DINAMISMO) */
-    @keyframes slideIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .stExpander, .kpi-card, .element-container {
-        animation: slideIn 0.5s ease-out forwards;
-    }
+    .streamlit-expanderHeader p { font-weight: 700 !important; font-size: 15px !important; color: #111827 !important; }
+    .streamlit-expanderHeader svg { fill: #111827 !important; }
 
     /* 5. TABS */
-    .stTabs [data-baseweb="tab-list"] {
-        background-color: transparent;
-        gap: 5px;
-    }
+    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
     .stTabs [data-baseweb="tab"] {
-        background-color: #ffffff;
+        background-color: white;
         border-radius: 6px;
-        color: #4b5563 !important;
         border: 1px solid #e5e7eb;
-        padding: 6px 16px;
-        font-size: 13px;
+        padding: 8px 20px;
+        font-weight: 600;
+        font-size: 14px;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #000000 !important;
-        color: #ffffff !important;
-        border-color: #000000;
-    }
-    .stTabs [aria-selected="true"] p {
-        color: #ffffff !important;
+        background-color: #111827 !important;
+        color: white !important;
+        border-color: #111827;
     }
     
     /* 6. FOOTER */
     .custom-footer {
-        margin-top: 30px;
+        margin-top: 40px;
         padding-top: 20px;
         border-top: 1px solid #e5e7eb;
         text-align: center;
@@ -177,7 +128,7 @@ st.markdown("""
 PROJECT_DATA = {
     "name": "CLUB HAWAI",
     "area": 265,
-    "type": "Losa Nervada (e=20cm)", # Texto acortado para móvil
+    "type": "Losa Nervada (e=20cm)",
     "strength": "f'c 210",
     "duration": "17 Días"
 }
@@ -189,67 +140,63 @@ ACTIVITIES = [
     {"id": 4, "title": "Curado", "icon": "💧", "duration": "7 Días", "desc": "Hidratación continua."}
 ]
 
-# --- FUNCIONES DE IA (GEMINI) ---
+# --- FUNCIONES DE IA ---
 def get_gemini_response(api_key, prompt):
-    if not api_key:
-        return "⚠️ Requiere API Key."
+    if not api_key: return "⚠️ Requiere API Key."
     try:
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-2.0-flash') 
         response = model.generate_content(prompt)
         return response.text
-    except Exception as e:
-        return f"Error: {str(e)}"
+    except Exception as e: return f"Error: {str(e)}"
 
 # --- INTERFAZ PRINCIPAL ---
 
-# 1. HEADER INTEGRADO
-col_logo, col_title = st.columns([1, 6])
-with col_logo:
-    # Intenta cargar la imagen, si falla usa un emoji grande
-    try:
-        st.image("HMRenderigStudio3D-[Recuperado].gif", width=80) 
-    except:
-        st.markdown("<div style='font-size:40px;'>🏗️</div>", unsafe_allow_html=True)
+# 1. HEADER TIPO BANNER (IMAGEN DRIVE)
+# ID del archivo extraído de tu link: 1rgnj8vDVR7w8gUcpGztnLhMJZ4KI6scO
+# Convertido a link de visualización directa
+header_url = "https://drive.google.com/uc?export=view&id=1rgnj8vDVR7w8gUcpGztnLhMJZ4KI6scO"
 
-with col_title:
-    st.markdown(f"""
-        <div style="margin-left: 10px;">
-            <h2 style="margin:0; font-size: 22px; font-weight:900; letter-spacing:-0.5px;">HM RENDERING STUDIO 3D</h2>
-            <p style="margin:0; font-size:13px; color:#6b7280 !important; font-weight:600;">PROYECTO: {PROJECT_DATA['name']} | CONTROL DE OBRA</p>
-        </div>
-    """, unsafe_allow_html=True)
+try:
+    st.image(header_url, use_container_width=True)
+except:
+    st.error("No se pudo cargar la imagen. Asegúrate de que el enlace de Drive tenga permisos de 'Cualquiera con el enlace'.")
 
-st.write("") # Espacio
+st.markdown(f"""
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="margin:0; font-size: 24px; font-weight:900; letter-spacing:-0.5px;">CONTROL DE OBRA: {PROJECT_DATA['name']}</h2>
+        <p style="margin:0; font-size:14px; color:#6b7280 !important; font-weight:600;">EJECUCIÓN DE LOSA ENTREPISO NERVADA</p>
+    </div>
+""", unsafe_allow_html=True)
 
-# 2. KPIS COMPACTOS (Nuevo Diseño Grid)
+# 2. KPIS
 kpi_html = f"""
 <div class="kpi-container">
     <div class="kpi-card">
         <div class="kpi-icon">📐</div>
         <div class="kpi-content">
-            <span class="kpi-label">Área</span>
+            <span class="kpi-label">Área Total</span>
             <span class="kpi-value">{PROJECT_DATA['area']} m²</span>
         </div>
     </div>
     <div class="kpi-card">
         <div class="kpi-icon">⏱️</div>
         <div class="kpi-content">
-            <span class="kpi-label">Tiempo</span>
+            <span class="kpi-label">Duración Est.</span>
             <span class="kpi-value">{PROJECT_DATA['duration']}</span>
         </div>
     </div>
     <div class="kpi-card">
         <div class="kpi-icon">🧱</div>
         <div class="kpi-content">
-            <span class="kpi-label">Concreto</span>
+            <span class="kpi-label">Resistencia</span>
             <span class="kpi-value">{PROJECT_DATA['strength']}</span>
         </div>
     </div>
     <div class="kpi-card">
         <div class="kpi-icon">📏</div>
         <div class="kpi-content">
-            <span class="kpi-label">Espesor</span>
+            <span class="kpi-label">Espesor Losa</span>
             <span class="kpi-value">20 cm</span>
         </div>
     </div>
@@ -257,73 +204,56 @@ kpi_html = f"""
 """
 st.markdown(kpi_html, unsafe_allow_html=True)
 
-# 3. CONTENIDO PRINCIPAL
+# 3. CONTENIDO
 tab1, tab2, tab3 = st.tabs(["CRONOGRAMA", "MATERIALES", "ASISTENTE IA"])
 
 # --- TAB 1: CRONOGRAMA ---
 with tab1:
     col_cron, col_rec = st.columns([2, 1])
-    
     with col_cron:
         st.markdown("##### 📅 Ruta Crítica")
         for act in ACTIVITIES:
             with st.expander(f"{act['icon']} {act['title']} ({act['duration']})"):
                 st.markdown(f"**Detalle:** {act['desc']}")
                 st.progress(0)
-    
     with col_rec:
-        st.markdown("##### ⚠️ Notas")
+        st.markdown("##### ⚠️ Notas Técnicas")
         st.info("""
-        - **Vibrado:** Obligatorio.
-        - **Grifado:** En vigas.
-        - **Curado:** 7 días.
+        - **Vibrado:** Obligatorio durante vaciado.
+        - **Grifado:** Acero en vigas.
+        - **Curado:** Mínimo 7 días.
         """)
 
 # --- TAB 2: MATERIALES ---
 with tab2:
     st.markdown("##### 📦 Inventario")
-    
-    # Selector compacto
-    opt = st.radio("Refuerzo:", ["A: Varilla 3/8\"", "B: Cercha"], horizontal=True)
+    opt = st.radio("Opciones de Refuerzo:", ["A: Varilla 3/8\"", "B: Cercha"], horizontal=True)
     
     data = [
-        {"M": "Cemento", "Cant": "159 Sacos"},
-        {"M": "Piedra", "Cant": "19 m³"},
-        {"M": "Arena", "Cant": "8 m³"},
-        {"M": "Anime", "Cant": "175 Pzas"},
-        {"M": "Malla", "Cant": "4 Rollos"},
+        {"M": "Cemento Gris", "Cant": "159 Sacos"},
+        {"M": "Piedra Picada", "Cant": "19 m³"},
+        {"M": "Arena Lavada", "Cant": "8 m³"},
+        {"M": "Bloque Anime", "Cant": "175 Pzas"},
+        {"M": "Malla Electrosoldada", "Cant": "4 Rollos"},
     ]
-    
     if "Varilla" in opt:
-        data.append({"M": "Varilla 3/8\"", "Cant": "116 Pzas"})
+        data.append({"M": "Varilla 3/8\" (L=6m)", "Cant": "116 Pzas"})
     else:
-        data.append({"M": "Cercha", "Cant": "58 Pzas"})
+        data.append({"M": "Cercha 15cm", "Cant": "58 Pzas"})
         
-    df = pd.DataFrame(data)
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(data), use_container_width=True, hide_index=True)
 
 # --- TAB 3: IA ---
 with tab3:
-    st.markdown("##### 🤖 Asistente Gemini")
-    
-    # Campo para la API Key aquí si no está en sidebar
+    st.markdown("##### 🤖 Asistente Técnico")
     if not st.session_state.get("api_key_input"):
          st.session_state.api_key_input = st.text_input("API Key (Google):", type="password")
-
-    nota = st.text_area("Bitácora:", height=70, placeholder="Ej: Llovió hoy...")
+    
+    nota = st.text_area("Bitácora Diaria:", height=80, placeholder="Escribe aquí las incidencias del día...")
     if st.button("Generar Reporte", type="primary"):
-        with st.spinner("..."):
-            res = get_gemini_response(st.session_state.api_key_input, f"Reporte obra civil corto: {nota}")
+        with st.spinner("Generando..."):
+            res = get_gemini_response(st.session_state.api_key_input, f"Reporte obra civil: {nota}")
             st.success(res)
-
-# --- SIDEBAR LIMPIO ---
-with st.sidebar:
-    try:
-        st.image("HMRenderigStudio3D-[Recuperado].gif", use_container_width=True)
-    except:
-        pass
-    st.markdown("### Configuración")
-    st.caption("Ajustes del proyecto")
 
 # --- FOOTER ---
 st.markdown("""
@@ -332,4 +262,3 @@ st.markdown("""
         © 2024 HM Rendering Studio 3D
     </div>
 """, unsafe_allow_html=True)
-
